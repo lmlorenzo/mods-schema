@@ -2,12 +2,14 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sch="http://purl.oclc.org/dsdl/schematron" elementFormDefault="qualified" targetNamespace="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:cdl="http://www.cdlib.org/inside/diglib/copyrightMD">
   <xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="https://www.w3.org/XML/2008/06/xlink.xsd"/>
   <xs:import namespace="http://www.cdlib.org/inside/diglib/copyrightMD" schemaLocation="http://www.cdlib.org/groups/rmg/docs/copyrightMD.xsd"/>
+    <!-- to do: fix Schematron rule to validate URL formatting -->
+    <!-- backwards compatible, should replace old schema -->
   <xs:annotation>
     <xs:appinfo>
-      <sch:title>MSUL MODS Schema/Schematron Validation</sch:title>
+      <sch:title>MSUL MODS 3.7 Schema/Schematron Validation</sch:title>
       <sch:ns prefix="mods" uri="http://www.loc.gov/mods/v3"/>
     </xs:appinfo>
-  </xs:annotation>  
+  </xs:annotation> 
   <xs:element name="mods">
     <xs:annotation>
       <xs:appinfo>
@@ -18,43 +20,52 @@
             <sch:assert test="mods:originInfo/mods:dateOther[@type='year']">Record must have a mods:dateOther[@type='year'] element.</sch:assert>
             <sch:assert test="mods:genre[@authority='dct']">Record must have a DCTerms genre.</sch:assert>
             <sch:assert test="mods:genre[@authority='aat']">Record must have an AAT genre.</sch:assert>            
-            <sch:assert test="mods:relatedItem[@type='host']">Record must contain a mods:relatedItem element with type attribute of 'host'.</sch:assert>
+            <sch:assert test="mods:relatedItem[@type='host']">Record must contain a mods:relatedItem element for the collection name with type attribute of 'host'.</sch:assert>
             <sch:assert test="mods:identifier[@type='filename']">Record must contain a mods:identifier element with type attribute of 'filename'.</sch:assert>
+            <sch:assert test="count(mods:classification[not(@type)])&lt;=1">Record may not contain more than one mods:classification[not(@type)]</sch:assert>
+            <sch:assert test="count(mods:classification[@type='lcc'])&lt;=1">Record may not contain more than one mods:classification[@type='lcc']</sch:assert>
             <sch:assert test="mods:accessCondition[@type='use and reproduction'] or mods:accessCondition[@type='rights holder']">Record must have either a mods:accessCondition element with type attribute of 'use and reproduction' (for non-TIC resources) or with type attribute 'rights holder' (TIC resources).</sch:assert>
             <sch:assert test="mods:accessCondition[@type='dpla']">Record must have a mods:accessCondition element with type attribute of 'dpla'.</sch:assert>
+            <!-- count for certain elements -->
+            <sch:assert test="count(mods:originInfo)=1">mods:originInfo must appear once and only once.</sch:assert>
+            <sch:assert test="count(mods:physicalDescription)=1">mods:physicalDescription must appear once and only once.</sch:assert>
+            <sch:assert test="count(mods:abstract)&lt;=1">mods:abstract may only appear once.</sch:assert>
+            <sch:assert test="count(mods:recordInfo)=1">mods:recordInfo must appear once and only once.</sch:assert>
           </sch:rule>
         </sch:pattern>
       </xs:appinfo>
     </xs:annotation>
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
-        <xs:element ref="mods:titleInfo" minOccurs="1" maxOccurs="unbounded"/>
-        <xs:element ref="mods:name" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element ref="mods:typeOfResource" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="mods:titleInfo"/>
+        <xs:element ref="mods:name"/>
+        <xs:element ref="mods:typeOfResource"/>
         <xs:element ref="mods:genre" minOccurs="2" maxOccurs="unbounded"/>
-        <xs:element ref="mods:originInfo" minOccurs="1" maxOccurs="1"/>
-        <xs:element ref="mods:language" minOccurs="1" maxOccurs="unbounded"/>
-        <xs:element ref="mods:physicalDescription" minOccurs="1" maxOccurs="1"/>
-        <xs:element ref="mods:abstract" minOccurs="0" maxOccurs="1"/>
-        <xs:element ref="mods:note" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element ref="mods:subject" minOccurs="1" maxOccurs="unbounded"/>
-        <xs:element ref="mods:classification" minOccurs="0"/>
-        <xs:element ref="mods:location" minOccurs="0"/>
-        <xs:element ref="mods:relatedItem" minOccurs="1"/>
-        <xs:element ref="mods:identifier" minOccurs="1" maxOccurs="unbounded"/>
-        <xs:element ref="mods:accessCondition" minOccurs="2" maxOccurs="2"/>
-        <xs:element ref="mods:recordInfo" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="mods:originInfo"/>
+        <xs:element ref="mods:language"/>
+        <xs:element ref="mods:physicalDescription"/>
+        <xs:element ref="mods:tableOfContents"/>
+        <xs:element ref="mods:abstract"/>
+        <xs:element ref="mods:note"/>
+        <xs:element ref="mods:subject"/>
+        <xs:element ref="mods:classification"/>
+        <xs:element ref="mods:location"/>
+        <xs:element ref="mods:relatedItem"/>
+        <xs:element ref="mods:identifier"/>
+        <xs:element ref="mods:accessCondition"/>
+        <xs:element ref="mods:recordInfo"/>
       </xs:choice>
       <xs:attribute name="version" type="xs:decimal"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="name">
     <xs:complexType>
-      <xs:sequence>
+      <xs:choice maxOccurs="unbounded">
         <xs:element ref="mods:namePart" maxOccurs="unbounded"/>
         <xs:element ref="mods:titleInfo" minOccurs="0" maxOccurs="1"/>
-        <xs:element ref="mods:role" maxOccurs="unbounded"/>
-      </xs:sequence>      
+        <xs:element ref="mods:nameIdentifier" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="mods:role" maxOccurs="unbounded"/>        
+      </xs:choice>      
       <xs:attribute name="type" use="required" type="xs:string"/>
       <xs:attribute name="usage">
         <xs:simpleType>
@@ -71,12 +82,22 @@
       <xs:appinfo>
         <sch:pattern>
           <sch:rule abstract="true" id="trailing-punct">
-            <sch:assert role="warning" test="not(ends-with(.,'.')) and not(ends-with(.,',')) and not(ends-with(.,':')) and not(ends-with(.,' ')) and not(ends-with(.,'/')) or matches(.,' ([A-Z]\.){0,2}[A-Z]{1}\.$') or matches(.,' (Co|Inc)\.$') or matches(.,' ?(Mr|Mrs|Ms)\.$')">Check <sch:name/> for trailing punctuation.</sch:assert>
+            <sch:assert role="warning" test="not(ends-with(.,'.')) and not(ends-with(.,',')) and not(ends-with(.,':')) and not(ends-with(.,' ')) and not(ends-with(.,'/')) or matches(.,' ([A-Z]\.){0,2}[A-Z]{1}\.$') or matches(.,' (Co|Inc)\.$') or matches(.,' ?(Mr|Mrs|Ms|Sr|Jr)\.$')">Check <sch:name/> for trailing punctuation.</sch:assert>
+          </sch:rule>
+        </sch:pattern>
+        <sch:pattern>
+          <sch:rule abstract="true" id="blank-element">
+            <sch:assert test="string-length(.) &gt; 0"><sch:name/> is blank.</sch:assert>
           </sch:rule>
         </sch:pattern>
         <sch:pattern>
           <sch:rule context="mods:namePart">
             <sch:extends rule="trailing-punct"/>
+          </sch:rule>
+        </sch:pattern>
+        <sch:pattern>
+          <sch:rule context="mods:namePart">
+            <sch:extends rule="blank-element"/>
           </sch:rule>
         </sch:pattern>
       </xs:appinfo>
@@ -92,15 +113,66 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <xs:element name="nameIdentifier">
+      <xs:annotation>
+          <xs:appinfo>
+              <sch:pattern>
+                  <sch:rule abstract="true" id="url-format">
+                      <!-- regex doesn't flag double punctuation when it should -->
+                      <sch:assert role="warning" test="matches(.,'^https?://[a-zA-Z0-9]+\.[a-zA-Z0-9\p{P}]+((\.|/){1}[a-zA-Z0-9\p{P}])*$') and not(contains(.,' ')) and not(contains(.,'\')) and not(ends-with(.,'.'))">URL in <sch:name/> may be formatted incorrectly.</sch:assert>
+                  </sch:rule>
+              </sch:pattern>
+              <sch:pattern>
+                  <sch:rule context="mods:nameIdentifier">
+                      <sch:extends rule="url-format"/>
+                  </sch:rule>
+              </sch:pattern>
+              <sch:pattern>
+                <sch:rule context="mods:nameIdentifier">
+                  <sch:report test="../../../mods:mods[@version='3.5']">mods:nameIdentifier is not a legal element in MODS 3.5. Use MODS version 3.6 or later.</sch:report>
+                </sch:rule>
+              </sch:pattern>
+          </xs:appinfo>
+      </xs:annotation>
+      <xs:complexType mixed="true">            
+          <xs:simpleContent>
+              <xs:extension base="xs:anyURI">
+                  <xs:attribute name="type" type="xs:string"/>
+              </xs:extension>
+          </xs:simpleContent>
+      </xs:complexType>
+  </xs:element>
   <xs:attributeGroup name="authority-attributes-required">
     <xs:attribute name="authority" use="required" type="xs:string"/>
-    <xs:attribute name="authorityURI" use="required" type="xs:anyURI"/>
-    <xs:attribute name="valueURI" use="required" type="xs:anyURI"/>
+    <xs:attribute name="authorityURI" use="required" type="xs:anyURI">
+        <!-- this rule will check @authorityURI anywhere in the target record regardless of attributeGroup -->
+        <xs:annotation>
+            <xs:appinfo>
+                <sch:pattern>
+                    <sch:rule context="@authorityURI">
+                        <sch:extends rule="url-format"/>
+                    </sch:rule>
+                </sch:pattern>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="valueURI" use="required" type="xs:anyURI">
+        <!-- this rule will check @valueURI anywhere in the target record regardless of attributeGroup -->
+        <xs:annotation>
+            <xs:appinfo>
+                <sch:pattern>
+                    <sch:rule context="@valueURI">
+                        <sch:extends rule="url-format"/>
+                    </sch:rule>
+                </sch:pattern>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:attribute>    
   </xs:attributeGroup>
   <xs:attributeGroup name="authority-attributes-optional">
     <xs:attribute name="authority" use="optional" type="xs:string"/>
-    <xs:attribute name="authorityURI" use="optional" type="xs:anyURI"/>
-    <xs:attribute name="valueURI" use="optional" type="xs:anyURI"/>
+    <xs:attribute name="authorityURI" use="optional" type="xs:anyURI"/>        
+    <xs:attribute name="valueURI" use="optional" type="xs:anyURI"/>        
   </xs:attributeGroup>
   <xs:element name="roleTerm">
     <xs:annotation>
@@ -110,6 +182,11 @@
             <sch:extends rule="trailing-punct"/>
           </sch:rule>
         </sch:pattern>
+        <sch:pattern>
+          <sch:rule context="mods:roleTerm">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
       </xs:appinfo>
     </xs:annotation>
     <xs:complexType mixed="true">
@@ -117,8 +194,35 @@
       <xs:attributeGroup ref="mods:authority-attributes-required"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="typeOfResource" type="xs:string"/>
+  <xs:element name="typeOfResource" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:typeOfResource">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <!-- don't add authority info to typeOfResource for now, may revisit later -->
+    <!--<xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:authority-attributes-optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>-->
+  </xs:element>
   <xs:element name="genre">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:genre">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attributeGroup ref="mods:authority-attributes-required"/>
     </xs:complexType>
@@ -130,6 +234,9 @@
           <sch:rule abstract="true" id="edtf-formatting">
             <sch:assert test="matches(.,'^([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown)[~?]?[/]?([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown|open)?[~?]?$')">Date in <sch:name/> is formatted incorrectly.</sch:assert>
           </sch:rule>
+          <sch:rule abstract="true" id="date-value">
+            <sch:assert test="(matches(.,'^[\dx]{4}$')) or (matches(.,'^[\dx]{4}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1) or (matches(.,'^[\dx]{4}-[\dx]{2}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1 and number(substring(.,9,2))&lt;=31 and number(substring(.,9,2))&gt;=1) or (contains(.,'/')) or (contains(.,'unknown'))">Month or day in <sch:name/> is incorrect.</sch:assert>
+          </sch:rule>
         </sch:pattern>
         <sch:pattern>
           <sch:rule context="mods:originInfo/mods:dateIssued">
@@ -137,6 +244,14 @@
           </sch:rule>
           <sch:rule context="mods:originInfo/mods:dateCreated">
             <sch:extends rule="edtf-formatting"/>
+          </sch:rule>          
+        </sch:pattern>
+        <sch:pattern>
+          <sch:rule context="mods:originInfo/mods:dateIssued">
+            <sch:extends rule="date-value"/>
+          </sch:rule>
+          <sch:rule context="mods:originInfo/mods:dateCreated">
+            <sch:extends rule="date-value"/>
           </sch:rule>
         </sch:pattern>
       </xs:appinfo>
@@ -164,21 +279,68 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="placeTerm">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:placeTerm">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attribute name="type" use="required" type="xs:string"/>
       <xs:attributeGroup ref="mods:authority-attributes-optional"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="publisher">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:publisher">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:simpleContent>
         <xs:extension base="xs:string">
-          <xs:attributeGroup ref="mods:authority-attributes-optional"/>
+          <xs:attributeGroup ref="mods:authority-attributes-optional">
+            <xs:annotation>
+              <xs:appinfo>
+                <sch:pattern>
+                  <sch:rule context="mods:publisher[@authority]">
+                    <sch:assert test="../../../mods:mods[@version='3.7' or not(@version)]">@authority is only valid for use on mods:publisher in MODS version 3.7.</sch:assert>
+                  </sch:rule>
+                </sch:pattern>
+                <sch:pattern>
+                  <sch:rule context="mods:publisher[@authorityURI]">
+                    <sch:assert test="../../../mods:mods[@version='3.7' or not(@version)]">@authorityURI is only valid for use on mods:publisher in MODS version 3.7.</sch:assert>
+                  </sch:rule>
+                </sch:pattern>
+                <sch:pattern>
+                  <sch:rule context="mods:publisher[@valueURI]">
+                    <sch:assert test="../../../mods:mods[@version='3.7' or not(@version)]">@valueURI is only valid for use on mods:publisher in MODS version 3.7.</sch:assert>
+                  </sch:rule>
+                </sch:pattern>
+              </xs:appinfo>
+            </xs:annotation>
+          </xs:attributeGroup>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="dateIssued">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:dateIssued">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:string">
@@ -196,11 +358,22 @@
               </xs:restriction>
             </xs:simpleType>
           </xs:attribute>
+          <!-- comment out optional calendar element for now, haven't had a use case for this yet -->
+          <!--<xs:attribute name="calendar" use="optional"/>-->
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="dateCreated">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:dateCreated">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:string">
@@ -218,11 +391,21 @@
               </xs:restriction>
             </xs:simpleType>
           </xs:attribute>
+          <!--<xs:attribute name="calendar" use="optional"/>-->
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="copyrightDate">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:copyrightDate">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:string">
@@ -233,6 +416,7 @@
               </xs:restriction>
             </xs:simpleType>
           </xs:attribute>
+          <!--<xs:attribute name="calendar" use="optional"/>-->
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -252,17 +436,46 @@
         <xs:extension base="xs:string">
           <xs:attribute name="encoding" use="required" type="xs:string"/>
           <xs:attribute name="type" use="required" type="xs:string"/>
+          <!--<xs:attribute name="calendar" use="optional"/>-->
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="issuance" type="xs:string"/>
+  <xs:element name="issuance" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:issuance">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
   <xs:element name="frequency">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:frequency">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attributeGroup ref="mods:authority-attributes-optional"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="edition">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:edition">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attribute name="supplied" use="optional"/>
     </xs:complexType>
@@ -286,15 +499,43 @@
       </xs:choice>
     </xs:complexType>
   </xs:element>
+  <xs:element name="tableOfContents" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:tableOfContents">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
   <xs:element name="form">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:form">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
-      <xs:attribute name="authority" use="required" type="xs:string"/>
-      <xs:attribute name="authorityURI" use="optional" type="xs:anyURI"/>
-      <xs:attribute name="valueURI" use="optional" type="xs:anyURI"/>
+      <xs:attributeGroup ref="mods:authority-attributes-optional"/>
       <xs:attribute name="type" use="optional" type="xs:string"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="internetMediaType" type="xs:string"/>
+  <xs:element name="internetMediaType" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:internetMediaType">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
   <xs:element name="extent" type="xs:string">
     <xs:annotation>
       <xs:appinfo>
@@ -303,12 +544,46 @@
             <sch:assert test="mods:extent" role="warning">Use of mods:physicalDescription/mods:extent is recommended.</sch:assert>
           </sch:rule>
         </sch:pattern>
+        <sch:pattern>
+          <sch:rule context="mods:extent">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
       </xs:appinfo>
     </xs:annotation>
   </xs:element>
-  <xs:element name="digitalOrigin" type="xs:string"/>
-  <xs:element name="abstract" type="xs:string"/>  
+  <xs:element name="digitalOrigin" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:digitalOrigin">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="abstract" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:abstract">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>  
   <xs:element name="note">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:note">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attribute name="type" use="optional"/>
     </xs:complexType>
@@ -348,9 +623,10 @@
         <xs:element name="genre" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element name="name" minOccurs="0" maxOccurs="unbounded">
           <xs:complexType>
-            <xs:sequence>
+            <xs:choice maxOccurs="unbounded">
               <xs:element ref="mods:namePart" maxOccurs="unbounded"/>
-            </xs:sequence>
+              <xs:element ref="mods:nameIdentifier" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:choice>
             <xs:attribute name="type" use="required" type="xs:string"/>
           </xs:complexType>
         </xs:element>
@@ -370,10 +646,50 @@
       <xs:attribute name="valueURI" type="xs:anyURI"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="topic" type="xs:string"/>
-  <xs:element name="geographic" type="xs:string"/>
-  <xs:element name="temporal" type="xs:string"/>
-  <xs:element name="geographicCode" type="xs:string"/>
+  <xs:element name="topic" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:topic">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="geographic" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:geographic">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="temporal" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:temporal">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="geographicCode" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:geographicCode">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
   <xs:element name="cartographics">
     <xs:complexType>
       <xs:sequence>
@@ -383,9 +699,63 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="coordinates" type="xs:string"/>
-  <xs:element name="scale" type="xs:string"/>
-  <xs:element name="projection" type="xs:string"/>
+  <xs:element name="coordinates" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:coordinates">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="scale" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:scale">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="projection" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:projection">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:attributeGroup name="hierarchicalGeographic_attributes_optional">
+      <xs:attribute name="level" use="optional" type="xs:string">
+          <xs:annotation>
+            <xs:appinfo>
+              <sch:pattern>
+                <sch:rule context="mods:hierarchicalGeographic/*[@level]">
+                  <sch:report test="../../../../mods:mods[@version='3.5']">@level is not a legal attribute in MODS 3.5. Use MODS version 3.6 or later.</sch:report>
+                </sch:rule>
+              </sch:pattern>
+            </xs:appinfo>
+          </xs:annotation>        
+      </xs:attribute>
+      <xs:attribute name="period" use="optional" type="xs:anyURI">
+        <xs:annotation>
+          <xs:appinfo>
+            <sch:pattern>
+              <sch:rule context="mods:hierarchicalGeographic/*[@period]">
+                <sch:report test="../../../../mods:mods[@version='3.5']">@period is not a legal attribute in MODS 3.5. Use MODS version 3.6 or later.</sch:report>
+              </sch:rule>
+            </sch:pattern>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:attribute>
+  </xs:attributeGroup>
   <xs:element name="hierarchicalGeographic">
     <xs:complexType>
       <xs:sequence>
@@ -403,22 +773,249 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="continent" type="xs:string"/>
-  <xs:element name="country" type="xs:string"/>
-  <xs:element name="region" type="xs:string"/>
-  <xs:element name="state" type="xs:string"/>
-  <xs:element name="territory" type="xs:string"/>
-  <xs:element name="county" type="xs:string"/>
-  <xs:element name="city" type="xs:string"/>
-  <xs:element name="citySection" type="xs:string"/>
-  <xs:element name="island" type="xs:string"/>
-  <xs:element name="area" type="xs:string"/>
-  <xs:element name="extraterrestrialArea" type="xs:string"/>
-  <xs:element name="classification">
+  <xs:element name="continent">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:continent">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
-      <xs:attribute name="authority" type="xs:string"/>
-      <xs:attribute name="authorityURI" type="xs:anyURI"/>
-      <xs:attribute name="valueURI" type="xs:anyURI"/>
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="country">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:country">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="region">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:region">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="regionType" use="optional">
+                  <xs:annotation>
+                    <xs:appinfo>
+                      <sch:pattern>
+                        <sch:rule context="mods:region[@regionType]">
+                          <sch:report test="../../../../mods:mods[@version='3.5']">@regionType is not a legal attribute in MODS 3.5. Use MODS version 3.6 or later.</sch:report>
+                        </sch:rule>
+                      </sch:pattern>
+                    </xs:appinfo>
+                  </xs:annotation>
+                </xs:attribute>
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="state">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:state">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="territory">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:territory">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="county">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:county">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="city">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:city">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="citySection">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:citySection">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="citySectionType" use="optional">
+                  <xs:annotation>
+                    <xs:appinfo>
+                      <sch:pattern>
+                        <sch:rule context="mods:citySection[@citySectionType]">
+                          <sch:report test="../../../../mods:mods[@version='3.5']">@citySectionType is not a legal attribute in MODS 3.5. Use MODS version 3.6 or later.</sch:report>
+                        </sch:rule>
+                      </sch:pattern>
+                    </xs:appinfo>
+                  </xs:annotation>
+                </xs:attribute>
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="island">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:island">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="area">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:area">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="areaType" use="optional">
+                  <xs:annotation>
+                    <xs:appinfo>
+                      <sch:pattern>
+                        <sch:rule context="mods:area[@areaType]">
+                          <sch:report test="../../../../mods:mods[@version='3.5']">@areaType is not a legal attribute in MODS 3.5. Use MODS version 3.6 or later.</sch:report>
+                        </sch:rule>
+                      </sch:pattern>
+                    </xs:appinfo>
+                  </xs:annotation>
+                </xs:attribute>
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="extraterrestrialArea">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:extraterrestrialArea">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attributeGroup ref="mods:hierarchicalGeographic_attributes_optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="classification">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:classification">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="mods:authority-attributes-optional"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="location">
@@ -453,6 +1050,7 @@
             <xs:simpleType>
               <xs:restriction base="xs:string">
                 <xs:enumeration value="preview"/>
+                <xs:enumeration value="object in context"/>
               </xs:restriction>
             </xs:simpleType>
           </xs:attribute>
@@ -462,6 +1060,15 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="physicalLocation">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:physicalLocation">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attributeGroup ref="mods:authority-attributes-optional"/>
     </xs:complexType>
@@ -474,19 +1081,68 @@
             <sch:assert test="mods:identifier[@type='oai_set']">mods:relatedItem[@type='host'] must have an oai_set identifier.</sch:assert>
           </sch:rule>
         </sch:pattern>
+        <sch:pattern>
+          <sch:rule context="mods:relatedItem">
+            <sch:assert test=".[@type or @otherType]">mods:relatedItem must include either a @type or @otherType attribute.</sch:assert>
+          </sch:rule>
+        </sch:pattern>
       </xs:appinfo>
     </xs:annotation>
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
+        <xs:element name="name" minOccurs="0">
+          <xs:annotation>
+            <xs:appinfo>
+              <sch:pattern>
+                <sch:rule context="mods:name/mods:namePart">
+                  <sch:extends rule="trailing-punct"/>
+                </sch:rule>
+              </sch:pattern>
+            </xs:appinfo>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+              <xs:element ref="mods:namePart" maxOccurs="unbounded"/>
+              <xs:element ref="mods:nameIdentifier" minOccurs="0" maxOccurs="unbounded"/>        
+            </xs:choice>      
+            <xs:attribute name="type" use="required" type="xs:string"/>
+            <xs:attributeGroup ref="mods:authority-attributes-optional"/>
+          </xs:complexType>
+        </xs:element>
         <xs:element ref="mods:titleInfo" minOccurs="0"/>
         <xs:element ref="mods:location" minOccurs="0"/>
         <xs:element ref="mods:part" minOccurs="0"/>
         <xs:element ref="mods:identifier" minOccurs="0" maxOccurs="unbounded"/>
       </xs:choice>
-      <xs:attribute name="type" use="required" type="xs:string"/>
+      <xs:attribute name="type" use="optional" type="xs:string"/>
+      <xs:attribute name="otherType" use="optional" type="xs:string">
+        <xs:annotation>
+          <xs:appinfo>
+            <sch:pattern>
+              <sch:rule context="mods:relatedItem[@otherType]">
+                <sch:report test="../../mods:mods[@version='3.4']">@otherType is not a legal attribute in MODS 3.4. Use MODS version 3.6 or later.</sch:report>
+                <sch:report test="../../mods:mods[@version='3.5']">@otherType is not a legal attribute in MODS 3.5. Use MODS version 3.6 or later.</sch:report>
+              </sch:rule>
+            </sch:pattern>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="otherTypeAuth" use="optional" type="xs:string"/>
+      <xs:attribute name="otherTypeAuthURI" use="optional" type="xs:anyURI"/>
+      <xs:attribute name="otherTypeURI" use="optional" type="xs:anyURI"/>
+      <xs:attribute ref="xlink:href" use="optional"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="part">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:part">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
         <xs:element ref="mods:detail" minOccurs="0"/>
@@ -495,6 +1151,15 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="detail">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:detail">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
         <xs:element ref="mods:number" minOccurs="0"/>
@@ -504,8 +1169,28 @@
       <xs:attribute name="type" type="xs:string"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="number" type="xs:string"/>  
-  <xs:element name="caption" type="xs:string"/>   
+  <xs:element name="number" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:number">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>  
+  <xs:element name="caption" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:caption">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>   
   <xs:element name="accessCondition">
     <xs:complexType mixed="true">
       <xs:sequence minOccurs="0">
@@ -531,11 +1216,29 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="descriptionStandard">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:descriptionStandard">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attributeGroup ref="mods:authority-attributes-optional"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="recordContentSource">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:recordContentSource">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attributeGroup ref="mods:authority-attributes-required"/>
     </xs:complexType>
@@ -559,15 +1262,52 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="recordIdentifier">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:recordIdentifier">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
       <xs:attribute name="source" type="xs:string"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="recordOrigin" type="xs:string"/>
-  <xs:element name="languageOfCataloging">
+  <xs:element name="recordOrigin" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:recordOrigin">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="languageOfCataloging">    
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="mods:languageTerm"/>
+          <xs:element name="languageTerm" minOccurs="1">
+              <xs:complexType mixed="true">
+                  <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                          <xs:attribute name="type" use="required">
+                              <xs:simpleType>
+                                  <xs:restriction base="xs:string">
+                                      <xs:enumeration value="code"/>
+                                      <xs:enumeration value="text"/>
+                                  </xs:restriction>
+                              </xs:simpleType>
+                          </xs:attribute>
+                          <xs:attribute name="authority" type="xs:string" use="required"/>
+                          <xs:attribute name="authorityURI" type="xs:anyURI" use="optional"/>                             
+                          <xs:attribute name="valueURI" type="xs:anyURI" use="optional"/>
+                      </xs:extension>
+                  </xs:simpleContent>
+              </xs:complexType>
+          </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -576,6 +1316,11 @@
       <xs:appinfo>
         <sch:pattern>
           <sch:rule context="mods:titleInfo/mods:title">
+            <sch:extends rule="trailing-punct"/>
+          </sch:rule>
+        </sch:pattern>
+        <sch:pattern>
+          <sch:rule context="mods:titleInfo/mods:subTitle">
             <sch:extends rule="trailing-punct"/>
           </sch:rule>
         </sch:pattern>
@@ -589,41 +1334,92 @@
         <xs:element ref="mods:partNumber" minOccurs="0" maxOccurs="1"/> 
       </xs:choice>
       <xs:attribute name="type" use="optional"/>
+      <xs:attributeGroup ref="mods:authority-attributes-optional"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="title" type="xs:string"/>
-  <xs:element name="subTitle" type="xs:string"/>
-  <xs:element name="partNumber" type="xs:string"/>
-  <xs:element name="partName" type="xs:string"/>
+  <xs:element name="title" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:title">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="subTitle" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:subTitle">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="partNumber" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:partNumber">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="partName" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:partName">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
+  </xs:element>
   <xs:element name="languageTerm">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:languageTerm">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:string">
-          <xs:attribute name="authority" use="required" type="xs:string"/>
-          <xs:attribute name="authorityURI" type="xs:anyURI"/>
           <xs:attribute name="type" use="required" type="xs:string"/>
-          <xs:attribute name="valueURI" type="xs:anyURI"/>
+          <xs:attributeGroup ref="mods:authority-attributes-required"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="identifier">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule context="mods:identifier">
+            <sch:extends rule="blank-element"/>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType mixed="true">
-      <!--<xs:annotation>
+      <xs:annotation>
         <xs:appinfo>
-          <!-\- figure out how to account for variations in suffix between __mods.xml and _mods.xml, add alternate handling or exception for michilac -\->
-          <sch:pattern>
-            <sch:rule context="mods:identifier[@type='filename']">
-              <sch:assert test=". = substring-before(tokenize(base-uri(),'/')[last()], 'mods.xml')">mods:identifier[@type='filename'] should match the filename (without any _mods.xml suffix).</sch:assert>
-            </sch:rule>
-          </sch:pattern>
           <sch:pattern>
             <sch:rule context="mods:identifier[@type='filename']">
               <sch:extends rule="trailing-punct"/>
             </sch:rule>
           </sch:pattern>
         </xs:appinfo>
-      </xs:annotation>-->
+      </xs:annotation>
       <xs:attribute name="type" use="required" type="xs:string"/>
       <xs:attribute name="invalid" use="optional" type="xs:string"/>
     </xs:complexType>     
