@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sch="http://purl.oclc.org/dsdl/schematron" elementFormDefault="qualified" targetNamespace="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:cdl="http://www.cdlib.org/inside/diglib/copyrightMD">
   <xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="https://www.w3.org/XML/2008/06/xlink.xsd"/>
-  <xs:import namespace="http://www.cdlib.org/inside/diglib/copyrightMD" schemaLocation="http://www.cdlib.org/groups/rmg/docs/copyrightMD.xsd"/>
+  <xs:import namespace="http://www.cdlib.org/inside/diglib/copyrightMD" schemaLocation="copyrightMD_schema.xsd" />
     <!-- to do: fix Schematron rule to validate URL formatting -->
     <!-- backwards compatible, should replace old schema -->
   <xs:annotation>
@@ -25,12 +25,15 @@
             <sch:assert test="count(mods:classification[not(@type)])&lt;=1">Record may not contain more than one mods:classification[not(@type)]</sch:assert>
             <sch:assert test="count(mods:classification[@type='lcc'])&lt;=1">Record may not contain more than one mods:classification[@type='lcc']</sch:assert>
             <sch:assert test="mods:accessCondition[@type='use and reproduction'] or mods:accessCondition[@type='rights holder']">Record must have either a mods:accessCondition element with type attribute of 'use and reproduction' (for non-TIC resources) or with type attribute 'rights holder' (TIC resources).</sch:assert>
-            <sch:assert test="mods:accessCondition[@type='dpla']">Record must have a mods:accessCondition element with type attribute of 'dpla'.</sch:assert>
+            <sch:assert test="mods:recordInfo/mods:recordContentSource">Record must have a mods:recordContentSource element.</sch:assert>
+            <sch:assert test="mods:recordInfo/mods:recordCreationDate">Record must have a mods:recordCreationDate element.</sch:assert>
+            <sch:assert test="mods:recordInfo/mods:languageOfCataloging">Record must have a mods:languageOfCataloging element.</sch:assert>
             <!-- count for certain elements -->
             <sch:assert test="count(mods:originInfo)=1">mods:originInfo must appear once and only once.</sch:assert>
             <sch:assert test="count(mods:physicalDescription)=1">mods:physicalDescription must appear once and only once.</sch:assert>
             <sch:assert test="count(mods:abstract)&lt;=1">mods:abstract may only appear once.</sch:assert>
             <sch:assert test="count(mods:recordInfo)=1">mods:recordInfo must appear once and only once.</sch:assert>
+            <sch:assert test="count(mods:accessCondition[@type='dpla'])=1">mods:accessCondition[@type='dpla'] must appear once and only once.</sch:assert>
           </sch:rule>
         </sch:pattern>
       </xs:appinfo>
@@ -137,7 +140,7 @@
       <xs:complexType mixed="true">            
           <xs:simpleContent>
               <xs:extension base="xs:anyURI">
-                  <xs:attribute name="type" type="xs:string"/>
+                  <xs:attribute name="type" type="xs:string" use="required"/>
               </xs:extension>
           </xs:simpleContent>
       </xs:complexType>
@@ -232,10 +235,11 @@
       <xs:appinfo>
         <sch:pattern>
           <sch:rule abstract="true" id="edtf-formatting">
-            <sch:assert test="matches(.,'^([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown)[~?]?[/]?([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown|open)?[~?]?$')">Date in <sch:name/> is formatted incorrectly.</sch:assert>
+            <!-- pre-2019 version of EDTF <sch:assert test="matches(.,'^([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown)[~?]?[/]?([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown|open)?[~?]?$')">Date in <sch:name/> is formatted incorrectly.</sch:assert> -->
+            <sch:assert test="matches(.,'^[\dx]{4}|[/]{1}[\dx]{4}|[\dx]{4}[/]{1}|[\dx]{4}-[\dx]{2}|([\dx]{4}-[\dx]{2}-[\dx]{2})[~?]?[/]?([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2})?[~?]?$')">Date in <sch:name/> is formatted incorrectly.</sch:assert>
           </sch:rule>
           <sch:rule abstract="true" id="date-value">
-            <sch:assert test="(matches(.,'^[\dx]{4}$')) or (matches(.,'^[\dx]{4}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1) or (matches(.,'^[\dx]{4}-[\dx]{2}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1 and number(substring(.,9,2))&lt;=31 and number(substring(.,9,2))&gt;=1) or (contains(.,'/')) or (contains(.,'unknown'))">Month or day in <sch:name/> is incorrect.</sch:assert>
+            <sch:assert test="(matches(.,'^[\dx]{4}$')) or (matches(.,'^[\dx]{4}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1) or (matches(.,'^[\dx]{4}-[\dx]{2}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1 and number(substring(.,9,2))&lt;=31 and number(substring(.,9,2))&gt;=1) or (contains(.,'/')) or (contains(.,'unknown') or (contains(.,'?')))">Month or day in <sch:name/> is incorrect.</sch:assert>
           </sch:rule>
         </sch:pattern>
         <sch:pattern>
@@ -426,7 +430,7 @@
       <xs:appinfo>
         <sch:pattern>
           <sch:rule context="mods:dateOther[@type='year']">
-            <sch:assert test="matches(.,'^\d{4}$') or matches(.,'^\d{3}x$') or matches(.,'^\d{2}xx$') or matches(.,'^\dxxx$')">mods:dateOther[@type='year'] formatted incorrectly.</sch:assert>
+            <sch:assert test="matches(.,'^\d{4}$') or matches(.,'^\d{3}x$') or matches(.,'^\d{2}xx$') or matches(.,'^\dxxx$') or matches(.,'^\d{3}X$') or matches(.,'^\d{2}XX$') or matches(.,'^\dXXX$')">mods:dateOther[@type='year'] formatted incorrectly.</sch:assert>
           </sch:rule>
         </sch:pattern>
       </xs:appinfo>
@@ -1110,6 +1114,7 @@
           </xs:complexType>
         </xs:element>
         <xs:element ref="mods:titleInfo" minOccurs="0"/>
+        <xs:element ref="mods:note" minOccurs="0"/>
         <xs:element ref="mods:location" minOccurs="0"/>
         <xs:element ref="mods:part" minOccurs="0"/>
         <xs:element ref="mods:identifier" minOccurs="0" maxOccurs="unbounded"/>
@@ -1206,12 +1211,12 @@
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
         <xs:element ref="mods:descriptionStandard" minOccurs="0"/>
-        <xs:element ref="mods:recordContentSource" minOccurs="0" maxOccurs="2"/>
+        <xs:element ref="mods:recordContentSource" minOccurs="1" maxOccurs="2"/>
         <xs:element ref="mods:recordCreationDate" maxOccurs="1"/>
         <xs:element ref="mods:recordChangeDate" maxOccurs="1"/>
         <xs:element ref="mods:recordIdentifier" minOccurs="0" maxOccurs="1"/>
         <xs:element ref="mods:recordOrigin" maxOccurs="1"/>
-        <xs:element ref="mods:languageOfCataloging"/>
+        <xs:element ref="mods:languageOfCataloging" minOccurs="1"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
