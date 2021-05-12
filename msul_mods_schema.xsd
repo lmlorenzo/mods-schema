@@ -62,6 +62,15 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="name">
+    <xs:annotation>
+      <xs:appinfo>
+        <sch:pattern>
+          <sch:rule abstract="true" id="naf-uri">
+            <sch:assert test="contains(.,'id.loc.gov/authorities/names')">mods:name[@valueURI] must be from NAF vocabulary.</sch:assert>
+          </sch:rule>
+        </sch:pattern>
+      </xs:appinfo>
+    </xs:annotation>
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
         <xs:element ref="mods:namePart" maxOccurs="unbounded"/>
@@ -77,7 +86,25 @@
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attributeGroup ref="mods:authority-attributes-optional"/>
+      <xs:attribute name="authorityURI" use="optional" type="xs:anyURI"/>
+      <xs:attribute name="valueURI" use="optional" type="xs:anyURI">
+        <xs:annotation>
+          <xs:appinfo>
+            <sch:pattern>
+              <sch:rule context="mods:name/@valueURI">
+                <sch:extends rule="naf-uri"/>
+              </sch:rule>
+            </sch:pattern>
+          </xs:appinfo>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="authority" use="optional">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="naf"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
   <xs:element name="namePart">
@@ -140,7 +167,14 @@
       <xs:complexType mixed="true">            
           <xs:simpleContent>
               <xs:extension base="xs:anyURI">
-                  <xs:attribute name="type" type="xs:string" use="required"/>
+                  <xs:attribute name="type" use="required">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="isni"/>
+                        <xs:enumeration value="orcid"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
               </xs:extension>
           </xs:simpleContent>
       </xs:complexType>
@@ -236,7 +270,7 @@
         <sch:pattern>
           <sch:rule abstract="true" id="edtf-formatting">
             <!-- pre-2019 version of EDTF <sch:assert test="matches(.,'^([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown)[~?]?[/]?([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown|open)?[~?]?$')">Date in <sch:name/> is formatted incorrectly.</sch:assert> -->
-            <sch:assert test="matches(.,'^[\dx]{4}|[/]{1}[\dx]{4}|[\dx]{4}[/]{1}|[\dx]{4}-[\dx]{2}|([\dx]{4}-[\dx]{2}-[\dx]{2})[~?]?[/]?([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2})?[~?]?$')">Date in <sch:name/> is formatted incorrectly.</sch:assert>
+            <sch:assert test="matches(.,'^[\dx]{4}$|^[/]{1}[\dx]{4}$|^[\dx]{4}[/]{1}$|^[\dx]{4}-[\dx]{2}$|^([\dx]{4}(-[\dx]{2})?(-[\dx]{2})?[~?]?[/]?[\dx]{4}(-[\dx]{2})?(-[\dx]{2})?[~?]?)$')">Date in <sch:name/> is formatted incorrectly.</sch:assert>
           </sch:rule>
           <sch:rule abstract="true" id="date-value">
             <sch:assert test="(matches(.,'^[\dx]{4}$')) or (matches(.,'^[\dx]{4}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1) or (matches(.,'^[\dx]{4}-[\dx]{2}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1 and number(substring(.,9,2))&lt;=31 and number(substring(.,9,2))&gt;=1) or (contains(.,'/')) or (contains(.,'unknown') or (contains(.,'?')))">Month or day in <sch:name/> is incorrect.</sch:assert>
