@@ -18,6 +18,7 @@
             <sch:assert test="count(mods:name[@usage='primary'])=1 or count(mods:name[@usage='primary'])=0">Record may only contain a maximum of one mods:name with @usage='primary'.</sch:assert>
             <sch:assert test="mods:subject[@authority='fast']">Record must have at least one FAST subject.</sch:assert>
             <sch:assert test="mods:originInfo/mods:dateOther[@type='year']">Record must have a mods:dateOther[@type='year'] element.</sch:assert>
+            <sch:assert test="mods:language">Record must have a language.</sch:assert>
             <sch:assert test="mods:genre[@authority='dct']">Record must have a DCTerms genre.</sch:assert>
             <sch:assert test="mods:genre[@authority='aat']">Record must have an AAT genre.</sch:assert>            
             <sch:assert test="mods:relatedItem[@type='host']">Record must contain a mods:relatedItem element for the collection name with type attribute of 'host'.</sch:assert>
@@ -270,10 +271,10 @@
         <sch:pattern>
           <sch:rule abstract="true" id="edtf-formatting">
             <!-- pre-2019 version of EDTF <sch:assert test="matches(.,'^([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown)[~?]?[/]?([\dx]{4}|[\dx]{4}-[\dx]{2}|[\dx]{4}-[\dx]{2}-[\dx]{2}|unknown|open)?[~?]?$')">Date in <sch:name/> is formatted incorrectly.</sch:assert> -->
-            <sch:assert test="matches(.,'^[\dx]{4}$|^[/]{1}[\dx]{4}$|^[\dx]{4}[/]{1}$|^[\dx]{4}-[\dx]{2}$|^([\dx]{4}(-[\dx]{2})?(-[\dx]{2})?[~?]?[/]?[\dx]{4}(-[\dx]{2})?(-[\dx]{2})?[~?]?)$')">Date in <sch:name/> is formatted incorrectly.</sch:assert>
+            <sch:assert test="matches(.,'^[\dx]{4}$|^[\dx]{4}[?~]?$|^[/]{1}[\dx]{4}$|^[\dx]{4}[/]{1}$|^[\dx]{4}-[\dx]{2}$|^[\dx]{4}-[\dx]{2}-[\dx]{2}$|^([\dx]{4}(-[\dx]{2})?(-[\dx]{2})?[~?]?[/]?[\dx]{4}(-[\dx]{2})?(-[\dx]{2})?[~?]?)$')">Date in <sch:name/> is formatted incorrectly.</sch:assert>
           </sch:rule>
           <sch:rule abstract="true" id="date-value">
-            <sch:assert test="(matches(.,'^[\dx]{4}$')) or (matches(.,'^[\dx]{4}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1) or (matches(.,'^[\dx]{4}-[\dx]{2}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1 and number(substring(.,9,2))&lt;=31 and number(substring(.,9,2))&gt;=1) or (contains(.,'/')) or (contains(.,'unknown') or (contains(.,'?')))">Month or day in <sch:name/> is incorrect.</sch:assert>
+            <sch:assert test="(matches(.,'^[\dx]{4}$')) or matches(.,'^[\dx]{4}[?~]?$') or (matches(.,'^[\dx]{4}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1) or (matches(.,'^[\dx]{4}-[\dx]{2}-[\dx]{2}$') and number(substring(.,6,2))&lt;=12 and number(substring(.,6,2))&gt;=1 and number(substring(.,9,2))&lt;=31 and number(substring(.,9,2))&gt;=1) or (contains(.,'/')) or (contains(.,'unknown') or (contains(.,'?')))">Month or day in <sch:name/> is incorrect.</sch:assert>
           </sch:rule>
         </sch:pattern>
         <sch:pattern>
